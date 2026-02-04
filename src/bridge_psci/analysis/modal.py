@@ -61,12 +61,12 @@ def run_modal(
         num_eigen = int(params.get("numEigen", 3))
 
     # Baseline (no load)
-    bridge1.static_analysis_load(1, int(load_nodes[0]), 0.0, 0.0, 0.0, 0.0)
+    bridge1.analysis.static_analysis_load(1, int(load_nodes[0]), 0.0, 0.0, 0.0, 0.0)
     before = np.array([ops.nodeDisp(int(n), 3) for n in check_nodes], dtype=float)
 
     # Apply load split over two nodes (same as notebook)
-    bridge1.static_analysis_load(2, int(load_nodes[0]), point_load_n / 2.0, 0.0, 0.0, 0.0)
-    bridge1.static_analysis_load(3, int(load_nodes[1]), point_load_n / 2.0, 0.0, 0.0, 0.0)
+    bridge1.analysis.static_analysis_load(2, int(load_nodes[0]), point_load_n / 2.0, 0.0, 0.0, 0.0)
+    bridge1.analysis.static_analysis_load(3, int(load_nodes[1]), point_load_n / 2.0, 0.0, 0.0, 0.0)
     after = np.array([ops.nodeDisp(int(n), 3) for n in check_nodes], dtype=float)
 
     deflections = after - before  # mm

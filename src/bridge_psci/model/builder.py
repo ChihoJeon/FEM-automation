@@ -76,8 +76,13 @@ class Analysis():
         tendon_horizontal_length = float(p.get('tendon_horizontal_length', p.get('girder_length', 0.0)))
         y_intercept_list = list(p.get('y_intercept_list', []))
         z_intercept_list = list(p.get('z_intercept_list', []))
+        y_coef_list = np.array(p.get('y_coef_list', []))
+        z_coef_list = np.array(p.get('z_coef_list', []))
         Ap_N = list(p.get('Ap_N', []))
         Ag = float(p.get('Ag', 0.0))
+        yt3 = float(p.get('yt3', 1037.485027702135))
+        Ep = float(p.get('Ep', 200000.0))
+        number_tendon = int(p.get('number_tendon', 4))
         ####################  Concrete dimension   ########################################
         L = self.L  # girder design length (mm)
         division = int(L /self.m * 5)     ######## 길이 기준(Element)
@@ -466,7 +471,9 @@ class Analysis():
         return nodes, beam_el
 
     def diaphragm(self, bridge_number,  number, node, Ec, nums_girder):
-        
+        p = self.params
+        girder_spacing = list(p['girder_spacing']) if isinstance(p['girder_spacing'], list) else [float(p['girder_spacing'])]
+
         nodes= np.array([])
 
         length = girder_spacing[0] / math.cos(math.radians(self.skew)) * self.m # 가로보 길이 
@@ -620,7 +627,8 @@ def build_bridge_model(params: Dict[str, Any]) -> 'BuiltModel':
     Bridge_skew = float(p.get('Bridge_skew', 0.0))
     girder_number = int(p['girder_number'])
     girder_length = float(p['girder_length'])
-    girder_spacing = float(p['girder_spacing'])
+    girder_H = float(p.get('girder_H', 2000.0))
+    girder_spacing = list(p['girder_spacing']) if isinstance(p['girder_spacing'], list) else [float(p['girder_spacing'])]
     Left_Cantilever = float(p.get('Left_Cantilever', 0.0))
     Right_Cantilever = float(p.get('Right_Cantilever', 0.0))
     gravity = float(p.get('gravity', -9.81))
@@ -682,7 +690,7 @@ def build_bridge_model(params: Dict[str, Any]) -> 'BuiltModel':
         ctx['spring'+str(i*2-1)] = Bridge1.spring(i*2-1, int(ctx['girder'+str(i)][0]['girder'+str(i)+'_centroid'].T[0][0]), girder_H, Bearing_Stiffness[i-1])
         ctx['spring'+str(i*2)] = Bridge1.spring(i*2, int(ctx['girder'+str(i)][0]['girder'+str(i)+'_centroid'].T[0][-1]), girder_H, Bearing_Stiffness[nums_girder+i-1])
 
-    imax = len(girder1[0]['girder1_centroid'])
+    imax = len(ctx['girder1'][0]['girder1_centroid'])
     for i in range(nums_girder):
         for j in range(imax):
             ops.rigidLink('beam',
